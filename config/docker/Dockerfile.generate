@@ -1,0 +1,24 @@
+FROM debian:bookworm-slim AS base
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl && \
+    apt-get clean
+
+FROM base AS boilerplate
+ARG TARGETARCH
+ARG VERSION=v0.10.1
+RUN curl -Lo \
+  ./boilerplace \
+  https://github.com/gruntwork-io/boilerplate/releases/download/$VERSION/boilerplate_$(uname)_$TARGETARCH
+RUN chmod +x boilerplate
+RUN mv boilerplate /usr/local/boilerplate
+
+FROM base AS ocp-project
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    bash \
+    && \
+    apt-get clean
+COPY --from=boilerplate /usr/local/boilerplate /usr/local/bin/boilerplate
+WORKDIR /opt/ocp-project
