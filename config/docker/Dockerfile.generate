@@ -9,7 +9,7 @@ FROM base AS boilerplate
 ARG TARGETARCH
 ARG VERSION=v0.10.1
 RUN curl -Lo \
-  ./boilerplace \
+  ./boilerplate \
   https://github.com/gruntwork-io/boilerplate/releases/download/$VERSION/boilerplate_$(uname)_$TARGETARCH
 RUN chmod +x boilerplate
 RUN mv boilerplate /usr/local/boilerplate

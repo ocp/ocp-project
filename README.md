@@ -1,4 +1,6 @@
 # ocp.project
 
 A repository of reusable definitions, modules, templates, boilerplate and
-utilities for development projects.
+utilities for software development projects.
+
+---
