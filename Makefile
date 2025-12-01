@@ -9,7 +9,6 @@ export ROOT := $(CURDIR)
 
 -include Makefiles/Makefile.generate
 -include Makefiles/Makefile.infra
--include Makefiles/Makefile.release
 
 help:
 	@echo "Usage: make [option]"
@@ -19,7 +18,6 @@ help:
 	@echo ""
 	@$(MAKE) generate.help
 	@$(MAKE) infra.help
-	@$(MAKE) release.help
 .PHONY: help
 
 ### Private (non-interface) targets.

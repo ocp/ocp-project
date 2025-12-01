@@ -1,0 +1,27 @@
+# ;; -*- mode: makefile ;-*-
+# vi: set ft=make :
+PRECOMMIT_URL=pre-commit/pre-commit/releases/download
+PRECOMMIT_VERSION=4.5.0
+
+infra.help:
+	@echo ""
+.PHONY: infra.help
+
+### Private (non-interface) targets.
+_infra.hooks.install:
+	wget -O pre-commit.pyz \
+		https://github.com/${PRECOMMIT_URL}/v${PRECOMMIT_VERSION}/pre-commit-${PRECOMMIT_VERSION}.pyz
+	python3 pre-commit.pyz install
+	python3 pre-commit.pyz install --hook-type commit-msg
+	rm pre-commit.pyz
+.PHONY: _infra.hooks.install
+
+_infra.hooks.update:
+	wget -O pre-commit.pyz \
+		https://github.com/${PRECOMMIT_URL}/v${PRECOMMIT_VERSION}/pre-commit-${PRECOMMIT_VERSION}.pyz
+	python3 pre-commit.pyz autoupdate
+	rm pre-commit.pyz
+.PHONY: _infra.hooks.update
+
+_infra.init: _infra.hooks.install
+.PHONY: _infra.init

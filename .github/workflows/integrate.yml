@@ -1,0 +1,138 @@
+name: Integrate
+on:
+  push:
+    branches:
+      - main
+      - development
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  actions: read
+  checks: write
+  contents: read
+
+env:
+  NAMESPACE: ocp
+  SERVICE: project
+  CI_TAG: latest
+
+jobs:
+  change_detection:
+    name: 'Detect changes'
+    runs-on: ubuntu-latest
+    outputs:
+      green: ${{ steps.last-successful-commit.outputs.base }}
+      images: ${{ steps.changed-images.outputs.any_changed  }}
+      tf-modules: ${{ steps.changed-tf-modules.outputs.any_changed  }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: last-successful-commit
+        uses: nrwl/nx-set-shas@v3
+        with:
+          main-branch-name: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+          workflow-id: 'integrate.yml'
+
+      - id: changed-images
+        uses: tj-actions/changed-files@v47
+        with:
+          base_sha: ${{ steps.last-successful-commit.outputs.base }}
+          files: src/docker/**Dockerfile.*
+
+      - id: changed-tf-modules
+        uses: tj-actions/changed-files@v47
+        with:
+          base_sha: ${{ steps.last-successful-commit.outputs.base }}
+          files: src/tf/modules/**/*.{tf,hcl}
+
+  integrate_terraform_lint_image:
+    name: 'Integrate ocp.project.tf.lint'
+    runs-on: ubuntu-latest
+    needs: change_detection
+    if: needs.change_detection.outputs.images == 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: changed-image
+        uses: tj-actions/changed-files@v47
+        with:
+          base_sha: ${{ needs.change_detection.outputs.green }}
+          files: src/docker/Dockerfile.tf.lint
+
+      - uses: docker/setup-buildx-action@v3
+        if: steps.changed-image.outputs.any_changed == 'true'
+
+      - uses: docker/build-push-action@v6
+        if: steps.changed-image.outputs.any_changed == 'true'
+        with:
+          context: .
+          file: src/docker/Dockerfile.tf.lint
+          load: false
+          push: false
+          cache-from: |
+            type=gha,scope=terraform.linters
+          cache-to: |
+            type=gha,scope=terraform.linters,mode=max
+          target: linters
+
+  integrate_terraform_image:
+    name: 'Integrate ocp.project.tf'
+    runs-on: ubuntu-latest
+    needs: change_detection
+    if: needs.change_detection.outputs.images == 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: changed-image
+        uses: tj-actions/changed-files@v47
+        with:
+          base_sha: ${{ needs.change_detection.outputs.green }}
+          files: src/docker/Dockerfile.tf
+
+      - uses: docker/setup-buildx-action@v3
+        if: steps.changed-image.outputs.any_changed == 'true'
+
+      - uses: docker/build-push-action@v6
+        if: steps.changed-image.outputs.any_changed == 'true'
+        with:
+          context: .
+          file: src/docker/Dockerfile.tf
+          load: false
+          push: false
+          cache-from: |
+            type=gha,scope=terraform.base
+          cache-to: |
+            type=gha,scope=terraform.base,mode=max
+          target: base
+
+      - uses: docker/build-push-action@v6
+        if: steps.changed-image.outputs.any_changed == 'true'
+        with:
+          context: .
+          file: src/docker/Dockerfile.tf
+          load: false
+          push: false
+          cache-from: |
+            type=gha,scope=terraform.base
+            type=gha,scope=terraform.tf
+          cache-to: |
+            type=gha,scope=terraform.tf,mode=max
+          target: tf
