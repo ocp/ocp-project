@@ -8,7 +8,19 @@ ARG TERRAGRUNT=0.93.11
 
 FROM ghcr.io/iann0036/iamlive:${IAMLIVE} AS iamlive
 FROM hashicorp/terraform:${TERRAFORM} AS terraform
-FROM gruntwork/terragrunt:${TERRAGRUNT} AS terragrunt
+
+FROM debian:bookworm-slim AS terragrunt
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl && \
+    apt-get clean
+ARG TARGETARCH
+RUN curl -Lo \
+  ./terragrunt \
+  https://github.com/gruntwork-io/terragrunt/releases/download/$TERRAGRUNT/terragrunt_$(uname)_$TARGETARCH
+RUN chmod +x terragrunt
+RUN mv terragrunt /usr/local/bin/terragrunt
 
 FROM debian:trixie-slim AS tf
 RUN apt-get update && \
