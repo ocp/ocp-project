@@ -20,9 +20,9 @@ RUN apt-get update && \
         procps && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-COPY --from=iamlive /usr/local/iamlive /usr/local/bin/iamlive
-COPY --from=terraform /usr/local/terraform /usr/local/bin/terraform
-COPY --from=terragrunt /usr/local/terragrunt /usr/local/bin/terragrunt
+COPY --from=iamlive /usr/local/bin/iamlive /usr/local/bin/iamlive
+COPY --from=terraform /usr/local/bin/terraform /usr/local/bin/terraform
+COPY --from=terragrunt /usr/local/bin/terragrunt /usr/local/bin/terragrunt
 WORKDIR /opt/tf
 ENV TF_CLI_CONFIG_FILE=/opt/tf/.terraformrc
 COPY ./src/scripts/entrypoint.deploy.sh /usr/local/bin/entrypoint.sh

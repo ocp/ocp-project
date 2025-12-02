@@ -3,19 +3,19 @@
 
 # Must be declared at global scope.
 ARG TFDOCS=0.20.0
-ARG TFLINT=0.60.0
-ARG TFUPDATE=0.8.5
+ARG TFLINT=v0.60.0
+ARG TFUPDATE=0.9
 ARG TRIVY=0.67.2
 
-FROM ghcr.io/terraform-docs/terraform-docs:${TFDOCS} AS tfdocs
+FROM quay.io/terraform-docs/terraform-docs:${TFDOCS} AS tfdocs
 FROM ghcr.io/terraform-linters/tflint:${TFLINT} AS tflint
 FROM minamijoyo/tfupdate:${TFUPDATE} AS tfupdate
 FROM aquasec/trivy:${TRIVY} AS trivy
 
 FROM debian:trixie-slim AS linters
-COPY --from=tfdocs /usr/local/terraform-docs /usr/local/bin/terraform-docs
-COPY --from=tflint /usr/local/tflint /usr/local/bin/tflint
-COPY --from=tfupdate /usr/local/tfupdate /usr/local/bin/tfupdate
+COPY --from=tfdocs /usr/local/bin/terraform-docs /usr/local/bin/terraform-docs
+COPY --from=tflint /usr/local/bin/tflint /usr/local/bin/tflint
+COPY --from=tfupdate /usr/local/bin/tfupdate /usr/local/bin/tfupdate
 COPY --from=trivy /usr/local/bin/trivy /usr/local/bin/trivy
 RUN chmod +x \
   /usr/local/bin/terraform-docs \
