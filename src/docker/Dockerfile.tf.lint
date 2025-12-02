@@ -6,6 +6,7 @@ ARG TFDOCS=0.20.0
 ARG TFLINT=v0.60.0
 ARG TFUPDATE=0.9
 ARG TRIVY=0.67.2
+
 FROM quay.io/terraform-docs/terraform-docs:${TFDOCS} AS tfdocs
 FROM ghcr.io/terraform-linters/tflint:${TFLINT} AS tflint
 FROM minamijoyo/tfupdate:${TFUPDATE} AS tfupdate

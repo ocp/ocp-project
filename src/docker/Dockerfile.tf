@@ -3,6 +3,7 @@
 
 # Must be declared at global scope.
 ARG TERRAFORM=1.14.0
+
 FROM hashicorp/terraform:${TERRAFORM} AS terraform
 
 FROM debian:trixie-slim AS base
