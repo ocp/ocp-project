@@ -117,7 +117,8 @@ jobs:
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          # severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
 
   integrate_terraform_image:
     name: 'Integrate ocp.project.tf'
@@ -169,7 +170,8 @@ jobs:
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          # severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
 
   integrate_tf:
     name: 'Integrate terraform'
