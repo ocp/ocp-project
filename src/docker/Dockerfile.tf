@@ -1,5 +1,7 @@
 # ; -*- mode: dockerfile;-*-
 # vim: set ft=dockerfile:
+
+# Must be declared at global scope.
 ARG IAMLIVE=1.1.27
 ARG TERRAFORM=1.14.0
 ARG TERRAGRUNT=0.93.11

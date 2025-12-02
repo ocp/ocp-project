@@ -1,5 +1,7 @@
 # ; -*- mode: dockerfile;-*-
 # vim: set ft=dockerfile:
+
+# Must be declared at global scope.
 ARG TFDOCS=0.20.0
 ARG TFLINT=0.60.0
 ARG TFUPDATE=0.8.5
