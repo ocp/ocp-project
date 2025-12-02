@@ -59,18 +59,27 @@ jobs:
         uses: nrwl/nx-set-shas@v3
         with:
           main-branch-name: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
-          workflow-id: 'deploy.yml'
+          workflow-id: 'integrate.yml'
+
+      - id: base-sha
+        run: |
+          BASE="${{ steps.last-successful-commit.outputs.base }}"
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE" 2>/dev/null; then
+            echo "Using HEAD as fallback base SHA"
+            BASE="${{ github.sha }}"
+          fi
+          echo "base_sha=$BASE" >> $GITHUB_OUTPUT
 
       - id: changed-images
         uses: tj-actions/changed-files@v47
         with:
-          base_sha: ${{ steps.last-successful-commit.outputs.base }}
+          base_sha: ${{ steps.base-sha.outputs.base_sha }}
           files: src/docker/**Dockerfile.*
 
       - id: changed-tf-modules
         uses: tj-actions/changed-files@v47
         with:
-          base_sha: ${{ steps.last-successful-commit.outputs.base }}
+          base_sha: ${{ steps.base-sha.outputs.base_sha }}
           files: src/tf/modules/**/*.{tf,hcl}
 
   push_terraform_lint_image:
