@@ -25,7 +25,6 @@ permissions:
 env:
   NAMESPACE: ocp
   SERVICE: project
-  CI_TAG: latest
   GHCR_REGISTRY: ghcr.io
   GHCR_OWNER: ${{ github.repository_owner }}
 
@@ -61,6 +60,11 @@ jobs:
           base_sha: ${{ steps.last-successful-commit.outputs.base }}
           files: src/tf/modules/**/*.{tf,hcl}
 
+      - name: Set image prefix
+        run: |
+          IMAGE_PREFIX="${GHCR_REGISTRY}/${GHCR_OWNER}/${NAMESPACE}.${SERVICE}"
+          echo "IMAGE_PREFIX=$IMAGE_PREFIX" >> $GITHUB_ENV
+
   integrate_terraform_lint_image:
     name: 'Integrate ocp.project.tf.lint'
     runs-on: ubuntu-latest
@@ -93,13 +97,24 @@ jobs:
         with:
           context: .
           file: src/docker/Dockerfile.tf.lint
-          load: false
+          load: true
           push: false
           cache-from: |
             type=gha,scope=terraform.linters
           cache-to: |
             type=gha,scope=terraform.linters,mode=max
           target: linters
+          tags: |
+            ${{ env.IMAGE_PREFIX }}.tf.lint:${{ github.sha }}
+
+      - uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.IMAGE_PREFIX }}.tf.lint:${{ github.sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
 
   integrate_terraform_image:
     name: 'Integrate ocp.project.tf'
@@ -133,13 +148,24 @@ jobs:
         with:
           context: .
           file: src/docker/Dockerfile.tf
-          load: false
+          load: true
           push: false
           cache-from: |
             type=gha,scope=terraform.tf
           cache-to: |
             type=gha,scope=terraform.tf,mode=max
           target: tf
+          tags: |
+            ${{ env.IMAGE_PREFIX }}.tf:${{ github.sha }}
+
+      - uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.IMAGE_PREFIX }}.tf:${{ github.sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
 
   integrate_tf:
     name: 'Integrate terraform'

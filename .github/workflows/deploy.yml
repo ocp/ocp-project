@@ -47,6 +47,11 @@ jobs:
           base_sha: ${{ steps.last-successful-commit.outputs.base }}
           files: src/tf/modules/**/*.{tf,hcl}
 
+      - name: Set image prefix
+        run: |
+          IMAGE_PREFIX="${GHCR_REGISTRY}/${GHCR_OWNER}/${NAMESPACE}.${SERVICE}"
+          echo "IMAGE_PREFIX=$IMAGE_PREFIX" >> $GITHUB_ENVt
+
   push_terraform_lint_image:
     name: 'Push ocp.project.tf.lint'
     runs-on: ubuntu-latest
