@@ -9,18 +9,20 @@ infra.help:
 
 ### Private (non-interface) targets.
 _infra.hooks.install:
-	wget -O pre-commit.pyz \
+	curl -Lo \
+		/tmp/pre-commit.pyz \
 		https://github.com/${PRECOMMIT_URL}/v${PRECOMMIT_VERSION}/pre-commit-${PRECOMMIT_VERSION}.pyz
-	python3 pre-commit.pyz install
-	python3 pre-commit.pyz install --hook-type commit-msg
-	rm pre-commit.pyz
+	python3 /tmp/pre-commit.pyz install
+	python3 /tmp/pre-commit.pyz install --hook-type commit-msg
+	rm /tmp/pre-commit.pyz
 .PHONY: _infra.hooks.install
 
 _infra.hooks.update:
-	wget -O pre-commit.pyz \
+	curl -Lo \
+		/tmp/pre-commit.pyz \
 		https://github.com/${PRECOMMIT_URL}/v${PRECOMMIT_VERSION}/pre-commit-${PRECOMMIT_VERSION}.pyz
-	python3 pre-commit.pyz autoupdate
-	rm pre-commit.pyz
+	python3 /tmp/pre-commit.pyz autoupdate
+	rm /tmp/pre-commit.pyz
 .PHONY: _infra.hooks.update
 
 _infra.init: _infra.hooks.install
