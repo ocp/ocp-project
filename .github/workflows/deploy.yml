@@ -49,11 +49,12 @@ jobs:
     outputs:
       green: ${{ steps.last-successful-commit.outputs.base }}
       images: ${{ steps.changed-images.outputs.any_changed }}
-      # tf-modules: ${{ steps.changed-tf-modules.outputs.any_changed }}
+      tf-modules: ${{ steps.changed-tf-modules.outputs.any_changed }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          filter: tree:0
 
       - id: last-successful-commit
         uses: nrwl/nx-set-shas@v3
@@ -61,25 +62,16 @@ jobs:
           main-branch-name: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
           workflow-id: 'integrate.yml'
 
-      - id: base-sha
-        run: |
-          BASE="${{ steps.last-successful-commit.outputs.base }}"
-          if [ -z "$BASE" ] || ! git cat-file -e "$BASE" 2>/dev/null; then
-            echo "Using HEAD as fallback base SHA"
-            BASE="${{ github.sha }}"
-          fi
-          echo "base_sha=$BASE" >> $GITHUB_OUTPUT
-
       - id: changed-images
         uses: tj-actions/changed-files@v47
         with:
-          base_sha: ${{ steps.base-sha.outputs.base_sha }}
+          base_sha: ${{ steps.last-successful-commit.outputs.base }}
           files: src/docker/**Dockerfile.*
 
       - id: changed-tf-modules
         uses: tj-actions/changed-files@v47
         with:
-          base_sha: ${{ steps.base-sha.outputs.base_sha }}
+          base_sha: ${{ steps.last-successful-commit.outputs.base }}
           files: src/tf/modules/**/*.{tf,hcl}
 
   push_terraform_lint_image:
@@ -91,6 +83,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          filter: tree:0
 
       - id: changed-image
         uses: tj-actions/changed-files@v47
@@ -135,6 +128,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          filter: tree:0
 
       - id: changed-image
         uses: tj-actions/changed-files@v47
