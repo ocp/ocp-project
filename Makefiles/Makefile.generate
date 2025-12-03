@@ -1,0 +1,6 @@
+# ;; -*- mode: makefile ;-*-
+# vi: set ft=make :
+
+generate.help:
+	@echo ""
+.PHONY: generate.help
