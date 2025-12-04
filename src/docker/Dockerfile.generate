@@ -21,4 +21,7 @@ RUN apt-get update && \
     && \
     apt-get clean
 COPY --from=boilerplate /usr/local/boilerplate /usr/local/bin/boilerplate
-WORKDIR /opt/ocp-project
+# TODO: COPY ./src/boilerplate /opt/generate/boilerplate
+# TODO: COPY ./src/config /opt/generate/config
+# TODO: COPY ./src/scripts /opt/generate/scripts
+WORKDIR /opt/generate

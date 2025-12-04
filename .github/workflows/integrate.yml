@@ -36,6 +36,7 @@ jobs:
       green: ${{ steps.last-successful-commit.outputs.base }}
       images: ${{ steps.changed-images.outputs.any_changed  }}
       image-prefix: ${{ steps.set-image-prefix.outputs.image_prefix  }}
+      scripts: ${{ steps.changed-scripts.outputs.any_changed  }}
       tf-modules: ${{ steps.changed-tf-modules.outputs.any_changed  }}
     steps:
       - uses: actions/checkout@v4
@@ -54,6 +55,12 @@ jobs:
         with:
           base_sha: ${{ steps.last-successful-commit.outputs.base }}
           files: src/docker/**Dockerfile.*
+
+      - id: changed-scripts
+        uses: tj-actions/changed-files@v47
+        with:
+          base_sha: ${{ steps.last-successful-commit.outputs.base }}
+          files: src/scripts/*.sh
 
       - id: changed-tf-modules
         uses: tj-actions/changed-files@v47
@@ -172,6 +179,18 @@ jobs:
           vuln-type: 'os,library'
           # severity: 'CRITICAL,HIGH'
           severity: 'CRITICAL'
+
+  integrate_scripts:
+    name: 'Integrate scripts'
+    runs-on: ubuntu-latest
+    if: needs.change_detection.outputs.scripts == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ludeeus/action-shellcheck@v2
+        with:
+          version: v0.11.0
+          scandir: './src/scripts'
 
   integrate_tf:
     name: 'Integrate terraform'
