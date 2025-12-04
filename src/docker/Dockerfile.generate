@@ -1,4 +1,4 @@
-FROM debian:bookworm-slim AS base
+FROM debian:trixie AS base
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -14,7 +14,7 @@ RUN curl -Lo \
 RUN chmod +x boilerplate
 RUN mv boilerplate /usr/local/boilerplate
 
-FROM base AS ocp-project
+FROM debian:trixie AS generate
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     bash \
