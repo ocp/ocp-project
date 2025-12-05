@@ -20,8 +20,9 @@ RUN apt-get update && \
     bash \
     && \
     apt-get clean
+
 COPY --from=boilerplate /usr/local/boilerplate /usr/local/bin/boilerplate
-# TODO: COPY ./src/boilerplate /opt/generate/boilerplate
-# TODO: COPY ./src/config /opt/generate/config
-# TODO: COPY ./src/scripts /opt/generate/scripts
 WORKDIR /opt/generate
+COPY ./src/boilerplate/ ./boilerplate/
+COPY ./src/config/ /opt/generate/config/
+COPY ./src/scripts/ /opt/generate/scripts/

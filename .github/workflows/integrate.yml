@@ -54,25 +54,78 @@ jobs:
         uses: tj-actions/changed-files@v47
         with:
           base_sha: ${{ steps.last-successful-commit.outputs.base }}
-          files: src/docker/**Dockerfile.*
+          files: ./src/docker/**Dockerfile.*
 
       - id: changed-scripts
         uses: tj-actions/changed-files@v47
         with:
           base_sha: ${{ steps.last-successful-commit.outputs.base }}
-          files: src/scripts/*.sh
+          files: ./src/scripts/*.sh
 
       - id: changed-tf-modules
         uses: tj-actions/changed-files@v47
         with:
           base_sha: ${{ steps.last-successful-commit.outputs.base }}
-          files: src/tf/modules/**/*.{tf,hcl}
+          files: ./src/tf/modules/**/*.{tf,hcl}
 
       - id: set-image-prefix
         if: steps.changed-images.outputs.any_changed
         run: |
           IMAGE_PREFIX="${GHCR_REGISTRY}/${GHCR_OWNER}/${NAMESPACE}.${SERVICE}"
           echo "image_prefix=$IMAGE_PREFIX" >> $GITHUB_OUTPUT
+
+  integrate_generate_image:
+    name: 'Integrate ocp.project.generate'
+    runs-on: ubuntu-latest
+    needs: change_detection
+    if: needs.change_detection.outputs.images == 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+
+      - id: changed-image
+        uses: tj-actions/changed-files@v47
+        with:
+          base_sha: ${{ needs.change_detection.outputs.green }}
+          files: ./src/docker/Dockerfile.generate
+
+      - uses: docker/login-action@v3
+        if: steps.changed-image.outputs.any_changed == 'true'
+        with:
+          registry: ${{ env.GHCR_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+        if: steps.changed-image.outputs.any_changed == 'true'
+
+      - uses: docker/build-push-action@v6
+        if: steps.changed-image.outputs.any_changed == 'true'
+        with:
+          context: .
+          file: ./src/docker/Dockerfile.generate
+          load: true
+          push: false
+          cache-from: |
+            type=gha,scope=terraform.generate
+          cache-to: |
+            type=gha,scope=terraform.generate,mode=max
+          target: generate
+          tags: |
+            ${{ needs.change_detection.outputs.image-prefix }}.generate:${{ github.sha }}
+
+      - uses: aquasecurity/trivy-action@0.28.0
+        if: steps.changed-image.outputs.any_changed == 'true'
+        with:
+          image-ref: ${{ needs.change_detection.outputs.image-prefix }}.generate:${{ github.sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          # severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
 
   integrate_terraform_lint_image:
     name: 'Integrate ocp.project.tf.lint'
@@ -89,9 +142,9 @@ jobs:
         uses: tj-actions/changed-files@v47
         with:
           base_sha: ${{ needs.change_detection.outputs.green }}
-          files: src/docker/Dockerfile.tf.lint
+          files: ./src/docker/Dockerfile.tf.lint
 
-      - uses: docker/login-action@v2
+      - uses: docker/login-action@v3
         if: steps.changed-image.outputs.any_changed == 'true'
         with:
           registry: ${{ env.GHCR_REGISTRY }}
@@ -105,7 +158,7 @@ jobs:
         if: steps.changed-image.outputs.any_changed == 'true'
         with:
           context: .
-          file: src/docker/Dockerfile.tf.lint
+          file: ./src/docker/Dockerfile.tf.lint
           load: true
           push: false
           cache-from: |
@@ -142,9 +195,9 @@ jobs:
         uses: tj-actions/changed-files@v47
         with:
           base_sha: ${{ needs.change_detection.outputs.green }}
-          files: src/docker/Dockerfile.tf
+          files: ./src/docker/Dockerfile.tf
 
-      - uses: docker/login-action@v2
+      - uses: docker/login-action@v3
         if: steps.changed-image.outputs.any_changed == 'true'
         with:
           registry: ${{ env.GHCR_REGISTRY }}
@@ -158,7 +211,7 @@ jobs:
         if: steps.changed-image.outputs.any_changed == 'true'
         with:
           context: .
-          file: src/docker/Dockerfile.tf
+          file: ./src/docker/Dockerfile.tf
           load: true
           push: false
           cache-from: |
@@ -199,7 +252,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: docker/login-action@v2
+      - uses: docker/login-action@v3
         if: steps.changed-image.outputs.any_changed == 'true'
         with:
           registry: ${{ env.GHCR_REGISTRY }}
