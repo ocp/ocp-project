@@ -201,6 +201,7 @@ jobs:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     needs: [
+      change_detection,
       push_generate_image,
       push_terraform_lint_image,
       push_terraform_image,
