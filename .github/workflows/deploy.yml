@@ -18,14 +18,12 @@ env:
   SEMVER: ${{ github.ref_name }}
 
 jobs:
-  change_detection:
+  metadata:
     name: 'Detect changes'
     runs-on: ubuntu-latest
     outputs:
       green: ${{ steps.last-successful-commit.outputs.base }}
-      images: ${{ steps.changed-images.outputs.any_changed }}
       image-prefix: ${{ steps.set-image-prefix.outputs.image_prefix  }}
-      tf-modules: ${{ steps.changed-tf-modules.outputs.any_changed }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,19 +35,7 @@ jobs:
         uses: nrwl/nx-set-shas@v3
         with:
           main-branch-name: main
-          workflow-id: 'integrate.yml'
-
-      - id: changed-images
-        uses: tj-actions/changed-files@v47
-        with:
-          base_sha: ${{ steps.last-successful-commit.outputs.base }}
-          files: ./src/docker/**Dockerfile.*
-
-      - id: changed-tf-modules
-        uses: tj-actions/changed-files@v47
-        with:
-          base_sha: ${{ steps.last-successful-commit.outputs.base }}
-          files: ./src/tf/modules/**/*.{tf,hcl}
+          workflow-id: 'deploy.yml'
 
       - id: set-image-prefix
         if: steps.changed-images.outputs.any_changed
@@ -60,8 +46,7 @@ jobs:
   push_generate_image:
     name: 'Push ocp.project.generate'
     runs-on: ubuntu-latest
-    needs: change_detection
-    # if: needs.change_detection.outputs.images == 'true'
+    needs: metadata
     outputs:
       changed: ${{ steps.changed-image.outputs.any_changed }}
     steps:
@@ -74,21 +59,18 @@ jobs:
       - id: changed-image
         uses: tj-actions/changed-files@v47
         with:
-          base_sha: ${{ needs.change_detection.outputs.green }}
+          base_sha: ${{ needs.metadata.outputs.green }}
           files: ./src/docker/Dockerfile.generate
 
       - uses: docker/login-action@v3
-        if: steps.changed-image.outputs.any_changed == 'true'
         with:
           registry: ${{ env.GHCR_REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: docker/setup-buildx-action@v3
-        if: steps.changed-image.outputs.any_changed == 'true'
 
       - uses: docker/build-push-action@v6
-        if: steps.changed-image.outputs.any_changed == 'true'
         with:
           context: .
           file: ./src/docker/Dockerfile.generate
@@ -100,15 +82,15 @@ jobs:
             type=gha,scope=terraform.generate,mode=max
           target: generate
           tags: |
-            ${{ needs.change_detection.outputs.image-prefix }}.generate:${{ env.SEMVER }}
-            ${{ needs.change_detection.outputs.image-prefix }}.generate:${{ github.sha }}
-            ${{ needs.change_detection.outputs.image-prefix }}.generate:latest
+            ${{ needs.metadata.outputs.image-prefix }}.generate:${{ env.SEMVER }}
+            ${{ needs.metadata.outputs.image-prefix }}.generate:${{ github.sha }}
+            ${{ needs.metadata.outputs.image-prefix }}.generate:latest
 
   push_terraform_lint_image:
     name: 'Push ocp.project.tf.lint'
     runs-on: ubuntu-latest
-    needs: change_detection
-    # if: needs.change_detection.outputs.images == 'true'
+    needs: metadata
+    if: needs.metadata.outputs.images == 'true'
     outputs:
       changed: ${{ steps.changed-image.outputs.any_changed }}
     steps:
@@ -121,21 +103,18 @@ jobs:
       - id: changed-image
         uses: tj-actions/changed-files@v47
         with:
-          base_sha: ${{ needs.change_detection.outputs.green }}
+          base_sha: ${{ needs.metadata.outputs.green }}
           files: ./src/docker/Dockerfile.tf.lint
 
       - uses: docker/login-action@v3
-        if: steps.changed-image.outputs.any_changed == 'true'
         with:
           registry: ${{ env.GHCR_REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: docker/setup-buildx-action@v3
-        if: steps.changed-image.outputs.any_changed == 'true'
 
       - uses: docker/build-push-action@v6
-        if: steps.changed-image.outputs.any_changed == 'true'
         with:
           context: .
           file: ./src/docker/Dockerfile.tf.lint
@@ -147,15 +126,15 @@ jobs:
             type=gha,scope=terraform.linters,mode=max
           target: linters
           tags: |
-            ${{ needs.change_detection.outputs.image-prefix }}.tf.lint:${{ env.SEMVER }}
-            ${{ needs.change_detection.outputs.image-prefix }}.tf.lint:${{ github.sha }}
-            ${{ needs.change_detection.outputs.image-prefix }}.tf.lint:latest
+            ${{ needs.metadata.outputs.image-prefix }}.tf.lint:${{ env.SEMVER }}
+            ${{ needs.metadata.outputs.image-prefix }}.tf.lint:${{ github.sha }}
+            ${{ needs.metadata.outputs.image-prefix }}.tf.lint:latest
 
   push_terraform_image:
     name: 'Push ocp.project.tf'
     runs-on: ubuntu-latest
-    needs: change_detection
-    # if: needs.change_detection.outputs.images == 'true'
+    needs: metadata
+    if: needs.metadata.outputs.images == 'true'
     outputs:
       changed: ${{ steps.changed-image.outputs.any_changed }}
     steps:
@@ -168,21 +147,18 @@ jobs:
       - id: changed-image
         uses: tj-actions/changed-files@v47
         with:
-          base_sha: ${{ needs.change_detection.outputs.green }}
+          base_sha: ${{ needs.metadata.outputs.green }}
           files: ./src/docker/Dockerfile.tf
 
       - uses: docker/setup-buildx-action@v3
-        if: steps.changed-image.outputs.any_changed == 'true'
 
       - uses: docker/login-action@v3
-        if: steps.changed-image.outputs.any_changed == 'true'
         with:
           registry: ${{ env.GHCR_REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: docker/build-push-action@v6
-        if: steps.changed-image.outputs.any_changed == 'true'
         with:
           context: .
           file: ./src/docker/Dockerfile.tf
@@ -194,15 +170,15 @@ jobs:
             type=gha,scope=terraform.tf,mode=max
           target: tf
           tags: |
-            ${{ needs.change_detection.outputs.image-prefix }}.tf:${{ env.SEMVER }}
-            ${{ needs.change_detection.outputs.image-prefix }}.tf:${{ github.sha }}
-            ${{ needs.change_detection.outputs.image-prefix }}.tf:latest
+            ${{ needs.metadata.outputs.image-prefix }}.tf:${{ env.SEMVER }}
+            ${{ needs.metadata.outputs.image-prefix }}.tf:${{ github.sha }}
+            ${{ needs.metadata.outputs.image-prefix }}.tf:latest
 
   create_release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     needs: [
-      change_detection,
+      metadata,
       push_generate_image,
       push_terraform_lint_image,
       push_terraform_image,
@@ -216,13 +192,13 @@ jobs:
 
       - name: 'Save image tags'
         run: |
-          prefix="${{ needs.change_detection.outputs.image-prefix }}"
+          prefix="${{ needs.metadata.outputs.image-prefix }}"
           tags_file="docker-tags.txt"
 
           images=(
-            generate
+            'generate'
             'tf.lint'
-            tf
+            'tf'
           )
 
           for image in "${images[@]}"; do
