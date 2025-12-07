@@ -2,11 +2,12 @@ name: Deploy
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*.*.*'   # Match smantic version release.
+      - 'v*.*.*-*' # Match pre-release, eg. v1.2.0-rc.1, v1.2.3-beta.1
 
 permissions:
   actions: read
-  contents: read
+  contents: write
   packages: write
 
 env:
@@ -59,6 +60,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: change_detection
     if: needs.change_detection.outputs.images == 'true'
+    outputs:
+      changed: ${{ steps.changed-image.outputs.any_changed }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -103,6 +106,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: change_detection
     if: needs.change_detection.outputs.images == 'true'
+    outputs:
+      changed: ${{ steps.changed-image.outputs.any_changed }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -147,6 +152,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: change_detection
     if: needs.change_detection.outputs.images == 'true'
+    outputs:
+      changed: ${{ steps.changed-image.outputs.any_changed }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -189,23 +196,39 @@ jobs:
   create_release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [push_terraform_lint_image, push_terraform_image]
+    needs: [
+      push_generate_image,
+      push_terraform_lint_image,
+      push_terraform_image,
+    ]
     steps:
       - uses: actions/checkout@v4
 
       - name: 'Save image tags'
         run: |
-          echo "${{ needs.change_detection.outputs.image-prefix }}.tf.lint:${{ env.SEMVER }}" >> docker-tags.txt
-          echo "${{ needs.change_detection.outputs.image-prefix }}.tf.lint:${{ github.sha }}" >> docker-tags.txt
-          echo "${{ needs.change_detection.outputs.image-prefix }}.tf.lint:latest" >> docker-tags.txt
-          echo "${{ needs.change_detection.outputs.image-prefix }}.tf:${{ env.SEMVER }}" >> docker-tags.txt
-          echo "${{ needs.change_detection.outputs.image-prefix }}.tf:${{ github.sha }}" >> docker-tags.txt
-          echo "${{ needs.change_detection.outputs.image-prefix }}.tf:latest" >> docker-tags.txt
+          prefix="${{ needs.change_detection.outputs.image-prefix }}"
+          tags_file="docker-tags.txt"
 
-      - uses: softprops/action-gh-release@v1
+          images=(
+            generate
+            'tf.lint'
+            tf
+          )
+
+          for image in "${images[@]}"; do
+            echo "${prefix}.${image}:${{ env.SEMVER }}" >> "${tags_file}"
+            echo "${prefix}.${image}:${{ github.sha }}" >> "${tags_file}"
+            echo "${prefix}.${image}:latest" >> "${tags_file}"
+          done
+
+      - uses: softprops/action-gh-release@v2
         with:
           name: Release ${{ env.SEMVER }}
-          files: docker-tags.txt
           tag_name: ${{ env.SEMVER }}
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          prerelease: ${{ contains(env.SEMVER, '-') }}
+          files: |
+            docker-tags.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
