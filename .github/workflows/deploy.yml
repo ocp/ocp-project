@@ -19,11 +19,12 @@ env:
 
 jobs:
   metadata:
-    name: 'Detect changes'
+    name: 'Metadata'
     runs-on: ubuntu-latest
     outputs:
       green: ${{ steps.last-successful-commit.outputs.base }}
       image-prefix: ${{ steps.set-image-prefix.outputs.image_prefix  }}
+      version: ${{ steps.set-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -38,10 +39,14 @@ jobs:
           workflow-id: 'deploy.yml'
 
       - id: set-image-prefix
-        if: steps.changed-images.outputs.any_changed
         run: |
           IMAGE_PREFIX="${GHCR_REGISTRY}/${GHCR_OWNER}/${NAMESPACE}.${SERVICE}"
           echo "image_prefix=$IMAGE_PREFIX" >> $GITHUB_OUTPUT
+
+      - id: set-version
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
   push_generate_image:
     name: 'Push ocp.project.generate'
@@ -82,7 +87,7 @@ jobs:
             type=gha,scope=terraform.generate,mode=max
           target: generate
           tags: |
-            ${{ needs.metadata.outputs.image-prefix }}.generate:${{ env.SEMVER }}
+            ${{ needs.metadata.outputs.image-prefix }}.generate:${{ needs.metadata.outputs.version }}
             ${{ needs.metadata.outputs.image-prefix }}.generate:${{ github.sha }}
             ${{ needs.metadata.outputs.image-prefix }}.generate:latest
 
@@ -90,7 +95,6 @@ jobs:
     name: 'Push ocp.project.tf.lint'
     runs-on: ubuntu-latest
     needs: metadata
-    if: needs.metadata.outputs.images == 'true'
     outputs:
       changed: ${{ steps.changed-image.outputs.any_changed }}
     steps:
@@ -126,7 +130,7 @@ jobs:
             type=gha,scope=terraform.linters,mode=max
           target: linters
           tags: |
-            ${{ needs.metadata.outputs.image-prefix }}.tf.lint:${{ env.SEMVER }}
+            ${{ needs.metadata.outputs.image-prefix }}.tf.lint:${{ needs.metadata.outputs.version }}
             ${{ needs.metadata.outputs.image-prefix }}.tf.lint:${{ github.sha }}
             ${{ needs.metadata.outputs.image-prefix }}.tf.lint:latest
 
@@ -134,7 +138,6 @@ jobs:
     name: 'Push ocp.project.tf'
     runs-on: ubuntu-latest
     needs: metadata
-    if: needs.metadata.outputs.images == 'true'
     outputs:
       changed: ${{ steps.changed-image.outputs.any_changed }}
     steps:
@@ -170,7 +173,7 @@ jobs:
             type=gha,scope=terraform.tf,mode=max
           target: tf
           tags: |
-            ${{ needs.metadata.outputs.image-prefix }}.tf:${{ env.SEMVER }}
+            ${{ needs.metadata.outputs.image-prefix }}.tf:${{ needs.metadata.outputs.version }}
             ${{ needs.metadata.outputs.image-prefix }}.tf:${{ github.sha }}
             ${{ needs.metadata.outputs.image-prefix }}.tf:latest
 
@@ -202,7 +205,7 @@ jobs:
           )
 
           for image in "${images[@]}"; do
-            echo "${prefix}.${image}:${{ env.SEMVER }}" >> "${tags_file}"
+            echo "${prefix}.${image}:${{ needs.metadata.outputs.version }}" >> "${tags_file}"
             echo "${prefix}.${image}:${{ github.sha }}" >> "${tags_file}"
             echo "${prefix}.${image}:latest" >> "${tags_file}"
           done
