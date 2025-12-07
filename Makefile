@@ -6,6 +6,7 @@ export SERVICE := project
 export KEY := $(NAMESPACE).$(SERVICE)
 
 export ROOT := $(CURDIR)
+export HEAD := $(shell git rev-parse --short HEAD)
 
 -include Makefiles/Makefile.generate
 -include Makefiles/Makefile.infra
@@ -14,11 +15,15 @@ help:
 	@echo "Usage: make [option]"
 	@echo "Makefile for running development tasks. Requires gmake."
 	@echo ""
-	@echo "  help            show this message"
+	@echo "  help                  show this message"
+	@echo "  init                  initialize the developer environment"
 	@echo ""
 	@$(MAKE) generate.help
 	@$(MAKE) infra.help
 .PHONY: help
+
+init: _infra.init
+.PHONY: init
 
 ### Private (non-interface) targets.
 _confirm:

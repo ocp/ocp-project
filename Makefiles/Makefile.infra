@@ -1,29 +1,27 @@
 # ;; -*- mode: makefile ;-*-
 # vi: set ft=make :
-PRECOMMIT_URL=pre-commit/pre-commit/releases/download
-PRECOMMIT_VERSION=4.5.0
+VENV := $(ROOT)/.venv
+VENV_BIN := $(abspath ${VENV})/bin
 
 infra.help:
+	@echo "  infra.hooks.update    update all pre-commit hooks"
 	@echo ""
 .PHONY: infra.help
 
+infra.hooks.update:
+	$(VENV_BIN)/pre-commit autoupdate
+.PHONY: infra.hooks.update
+
 ### Private (non-interface) targets.
+_infra.env:
+	python3 -m venv $(VENV)
+	$(VENV_BIN)/pip install --upgrade pip
+.PHONY: _infra.env
+
 _infra.hooks.install:
-	curl -Lo \
-		/tmp/pre-commit.pyz \
-		https://github.com/${PRECOMMIT_URL}/v${PRECOMMIT_VERSION}/pre-commit-${PRECOMMIT_VERSION}.pyz
-	python3 /tmp/pre-commit.pyz install
-	python3 /tmp/pre-commit.pyz install --hook-type commit-msg
-	rm /tmp/pre-commit.pyz
+	$(VENV_BIN)/pip install pre-commit
+	$(VENV_BIN)/pre-commit install
 .PHONY: _infra.hooks.install
 
-_infra.hooks.update:
-	curl -Lo \
-		/tmp/pre-commit.pyz \
-		https://github.com/${PRECOMMIT_URL}/v${PRECOMMIT_VERSION}/pre-commit-${PRECOMMIT_VERSION}.pyz
-	python3 /tmp/pre-commit.pyz autoupdate
-	rm /tmp/pre-commit.pyz
-.PHONY: _infra.hooks.update
-
-_infra.init: _infra.hooks.install
+_infra.init: _infra.env _infra.hooks.install
 .PHONY: _infra.init
