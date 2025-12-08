@@ -11,17 +11,17 @@ ARG VERSION=v0.10.1
 RUN curl -Lo \
   ./boilerplate \
   https://github.com/gruntwork-io/boilerplate/releases/download/$VERSION/boilerplate_$(uname)_$TARGETARCH
-RUN chmod +x boilerplate
 RUN mv boilerplate /usr/local/boilerplate
 
-FROM debian:trixie AS generate
+FROM debian:trixie AS final
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     bash \
     && \
     apt-get clean
-
 COPY --from=boilerplate /usr/local/boilerplate /usr/local/bin/boilerplate
+RUN chmod +x \
+  /usr/local/bin/boilerplate
 WORKDIR /opt/generate
 COPY ./src/boilerplate/ ./boilerplate/
 COPY ./src/config/ /opt/generate/config/

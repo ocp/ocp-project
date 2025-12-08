@@ -1,8 +1,8 @@
 # ;; -*- mode: makefile ;-*-
 # vi: set ft=make :
 
-generate.help:
+ops.help:
 	@echo ""
-.PHONY: generate.help
+.PHONY: ops.help
 
 ### Private (non-interface) targets.
