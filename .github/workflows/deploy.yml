@@ -85,6 +85,7 @@ jobs:
             type=gha,scope=generate.final
           cache-to: |
             type=gha,scope=generate.final,mode=max
+          platforms: linux/amd64,linux/arm64
           target: final
           tags: |
             ${{ needs.metadata.outputs.image-prefix }}.generate:${{ needs.metadata.outputs.version }}
@@ -128,6 +129,7 @@ jobs:
             type=gha,scope=ops.final
           cache-to: |
             type=gha,scope=ops.final,mode=max
+          platforms: linux/amd64,linux/arm64
           target: final
           tags: |
             ${{ needs.metadata.outputs.image-prefix }}.ops:${{ needs.metadata.outputs.version }}
