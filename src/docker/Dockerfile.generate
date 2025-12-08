@@ -7,11 +7,11 @@ RUN apt-get update && \
 
 FROM base AS boilerplate
 ARG TARGETARCH
-ARG VERSION=v0.10.1
-RUN curl -Lo \
+ARG BOILERPLATE=v0.10.1
+RUN curl --fail --show-error -Lo \
   ./boilerplate \
-  https://github.com/gruntwork-io/boilerplate/releases/download/$VERSION/boilerplate_$(uname)_$TARGETARCH
-RUN mv boilerplate /usr/local/boilerplate
+  https://github.com/gruntwork-io/boilerplate/releases/download/$BOILERPLATE/boilerplate_$(uname)_$TARGETARCH
+RUN mv boilerplate /usr/local/bin/boilerplate
 
 FROM debian:trixie AS final
 RUN apt-get update && \
@@ -19,7 +19,7 @@ RUN apt-get update && \
     bash \
     && \
     apt-get clean
-COPY --from=boilerplate /usr/local/boilerplate /usr/local/bin/boilerplate
+COPY --from=boilerplate /usr/local/bin/boilerplate /usr/local/bin/boilerplate
 RUN chmod +x \
   /usr/local/bin/boilerplate
 WORKDIR /opt/generate

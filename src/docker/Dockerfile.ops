@@ -24,7 +24,7 @@ RUN apt-get update && \
 FROM base AS iamlive
 ARG TARGETARCH
 ARG IAMLIVE=v1.1.27
-RUN curl -Lo \
+RUN curl --fail --show-error -Lo \
   ./iamlive.tar.gz \
   https://github.com/iann0036/iamlive/releases/download/$IAMLIVE/iamlive-$IAMLIVE-$(uname)-$TARGETARCH.tar.gz
 RUN tar -xzf iamlive.tar.gz
@@ -32,8 +32,8 @@ RUN mv iamlive /usr/local/bin/iamlive
 
 FROM base AS terragrunt
 ARG TARGETARCH
-ARG TERRAGRUNT=0.93.11
-RUN curl -Lo \
+ARG TERRAGRUNT=v0.93.11
+RUN curl --fail --show-error -Lo \
   ./terragrunt \
   https://github.com/gruntwork-io/terragrunt/releases/download/$TERRAGRUNT/terragrunt_$(uname)_$TARGETARCH
 RUN mv terragrunt /usr/local/bin/terragrunt
@@ -63,8 +63,9 @@ RUN chmod +x \
   /usr/local/bin/tflint \
   /usr/local/bin/tfupdate \
   /usr/local/bin/trivy
+COPY ./src/scripts/entrypoint.deploy.sh /usr/local/bin/entrypoint.sh
+COPY ./src/config/terraformrc /opt/tf/.terraformrc
 WORKDIR /opt/tf
 ENV TF_CLI_CONFIG_FILE=/opt/tf/.terraformrc
-COPY ./src/scripts/entrypoint.deploy.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

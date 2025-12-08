@@ -3,7 +3,7 @@
 
 IAMLIVE := false
 IMAGE_ADDRESS := ghcr.io/$(NAMESPACE)/$(KEY)
-IMAGE_VERSION := latest # TODO: 0.0.1
+IMAGE_VERSION := 0.0.1-rc.6
 IMAGE := $(IMAGE_ADDRESS).ops:$(IMAGE_VERSION)
 
 TF_LOG := WARN
@@ -28,7 +28,7 @@ ops.lint: \
 
 ops.scan: \
 	_ops.scan.images \
-	_ops.scan.tscan
+	_ops.scan.tf
 .PHONY: ops.lint
 
 ### Private (non-interface) targets.
