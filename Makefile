@@ -7,7 +7,6 @@ export KEY := $(NAMESPACE).$(SERVICE)
 
 export ROOT := $(CURDIR)
 export HEAD := $(shell git rev-parse --short HEAD)
-export IMAGE_PREFIX := ghcr.io/$(NAMESPACE)/$(KEY)
 
 -include Makefiles/Makefile.generate
 -include Makefiles/Makefile.infra

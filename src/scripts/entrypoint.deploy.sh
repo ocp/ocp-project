@@ -9,7 +9,7 @@
 # https://github.com/iann0036/iamlive
 set -eou pipefail
 
-if [ "${IAMLIVE}" = 'true' ]; then
+if [ "${IAMLIVE:-false}"  = 'true' ]; then
   BIND_IP='0.0.0.0'
   OUTPUT_FILE='/opt/tf/policy.json'
   export AWS_CSM_ENABLED=true

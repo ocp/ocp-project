@@ -1,6 +1,7 @@
 # ;; -*- mode: makefile ;-*-
 # vi: set ft=make :
 
+IAMLIVE := false
 IMAGE_ADDRESS := ghcr.io/$(NAMESPACE)/$(KEY)
 IMAGE_VERSION := latest # TODO: 0.0.1
 IMAGE := $(IMAGE_ADDRESS).ops:$(IMAGE_VERSION)
