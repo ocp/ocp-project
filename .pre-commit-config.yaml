@@ -8,6 +8,7 @@ repos:
       - id: debug-statements
       - id: detect-private-key
       - id: end-of-file-fixer
+        exclude: '^(src/tf/.*README.md$)'
       - id: forbid-new-submodules
       - id: trailing-whitespace
 

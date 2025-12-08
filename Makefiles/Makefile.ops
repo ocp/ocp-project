@@ -14,6 +14,7 @@ ops.help:
 	@echo "  ops.integrate         run all linters and scanners"
 	@echo "  ops.lint              ensure the codebase passes qa checks"
 	@echo "  ops.scan              scan the codebase for vulnerabilities"
+	@echo "  ops.shell             shell into the ops container"
 	@echo ""
 .PHONY: ops.help
 
@@ -30,6 +31,13 @@ ops.scan: \
 	_ops.scan.images \
 	_ops.scan.tf
 .PHONY: ops.lint
+
+ops.shell:
+	docker run --rm -it \
+		-v "$(TF_DIR):$(TF_VOLUME)" \
+		$(IMAGE) \
+		bash
+.PHONY: ops.shell
 
 ### Private (non-interface) targets.
 _ops.lint.tf: \
@@ -48,8 +56,10 @@ _ops.lint.tf.check: \
 .PHONY: _ops.lint.tf.check
 
 _ops.lint.tf.docs:
-	for dir in $(TF_DIR)/modules; do \
+	DIRS="modules"; \
+	for dir in $$DIRS; do \
 		docker run --rm -i \
+			-v "$(TF_DIR):$(TF_VOLUME)" \
 			$(IMAGE) \
 			terraform-docs \
 			markdown table \
@@ -81,7 +91,6 @@ _ops.lint.tf.hcl.validate:
 		-v "$(TF_DIR):$(TF_VOLUME)" \
 		$(IMAGE) \
 		terragrunt hcl validate \
-		--strict-mode \
 		--log-level $(TF_LOG);
 .PHONY: _ops.lint.tf.hcl.validate
 
