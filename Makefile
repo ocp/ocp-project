@@ -7,9 +7,11 @@ export KEY := $(NAMESPACE).$(SERVICE)
 
 export ROOT := $(CURDIR)
 export HEAD := $(shell git rev-parse --short HEAD)
+export IMAGE_PREFIX := ghcr.io/$(NAMESPACE)/$(KEY)
 
 -include Makefiles/Makefile.generate
 -include Makefiles/Makefile.infra
+-include Makefiles/Makefile.ops
 
 help:
 	@echo "Usage: make [option]"
@@ -20,6 +22,7 @@ help:
 	@echo ""
 	@$(MAKE) generate.help
 	@$(MAKE) infra.help
+	@$(MAKE) ops.help
 .PHONY: help
 
 init: _infra.init

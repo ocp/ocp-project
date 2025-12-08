@@ -1,8 +1,91 @@
 # ;; -*- mode: makefile ;-*-
 # vi: set ft=make :
 
+IMAGE_ADDRESS := ghcr.io/$(NAMESPACE)/$(KEY)
+IMAGE_VERSION := latest # TODO: 0.0.1
+IMAGE := $(IMAGE_ADDRESS).ops:$(IMAGE_VERSION)
+
+TF_LOG := WARN
+TF_DIR := $(ROOT)/src/tf
+TF_VOLUME := /opt/tf
+
 ops.help:
+	@echo "  ops.integrate         run all linters and scanners"
+	@echo "  ops.lint              ensure the codebase passes qa checks"
+	@echo "  ops.scan              scan the codebase for vulnerabilities"
 	@echo ""
 .PHONY: ops.help
 
+ops.integrate: \
+	ops.lint \
+	ops.scan
+.PHONY: ops.integrate
+
+ops.lint: \
+	 _ops.lint.tf
+.PHONY: ops.lint
+
+ops.scan: \
+	_ops.scan.images \
+	_ops.scan.tscan
+.PHONY: ops.lint
+
 ### Private (non-interface) targets.
+_ops.lint.tf: \
+	_ops.lint.tf.format \
+	_ops.lint.tf.check
+.PHONY: _ops.lint.tf
+
+_ops.lint.tf.format: \
+	_ops.lint.tf.fmt \
+	_ops.lint.tf.hcl.fmt
+.PHONY: _ops.lint.tf.format
+
+_ops.lint.tf.check: \
+	_ops.lint.tf.hcl.validate \
+	_ops.lint.tf.docs
+.PHONY: _ops.lint.tf.check
+
+_ops.lint.tf.docs:
+	for dir in $(TF_DIR)/modules; do \
+		docker run --rm -i \
+			$(IMAGE) \
+			terraform-docs \
+			markdown table \
+			--recursive \
+			--recursive-path $$dir \
+			--output-file README.md \
+			$(TF_VOLUME); \
+	done
+.PHONY: _ops.lint.tf.docs
+
+_ops.lint.tf.fmt:
+	docker run --rm -i \
+		-v "$(TF_DIR):$(TF_VOLUME)" \
+		$(IMAGE) \
+		terraform fmt \
+		-diff \
+		-write
+.PHONY: _ops.lint.fmt
+
+_ops.lint.tf.hcl.fmt:
+	docker run --rm -i \
+		-v "$(TF_DIR):$(TF_VOLUME)" \
+		$(IMAGE) \
+		terragrunt hcl fmt
+.PHONY: _ops.lint.tf.hcl.fmt
+
+_ops.lint.tf.hcl.validate:
+	docker run --rm -i \
+		-v "$(TF_DIR):$(TF_VOLUME)" \
+		$(IMAGE) \
+		terragrunt hcl validate \
+		--strict-mode \
+		--log-level $(TF_LOG);
+.PHONY: _ops.lint.tf.hcl.validate
+
+_ops.scan.images:
+.PHONY: _ops.scan.images
+
+_ops.scan.tf:
+.PHONY: _ops.scan.tf

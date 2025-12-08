@@ -16,6 +16,13 @@ will always require so they can be treated together as a single unit.
 
 ## Higher-Order Modules
 
+> **NOTE**: Terragrunt has relatively recently added new nomenclature and
+> abstractions to its functionality like 'unit' and 'stack'. We don't yet take
+> these into account here as most of this work was done before those we
+> introduced. We expect to gradually start migrating towards those patterns
+> eventually if we feel like they are a good fit, but all the reasoning below
+> still stands, and in fact in some ways is clearer to understand...
+
 Another thing you might notice is that all modules other than the label module
 itself expect a reference to a `label` resource to be passed in as a variable.
 
