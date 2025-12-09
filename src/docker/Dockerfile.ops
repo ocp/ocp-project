@@ -48,6 +48,7 @@ RUN apt-get update && \
         procps && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+WORKDIR /opt/tf
 COPY --from=iamlive /usr/local/bin/iamlive /usr/local/bin/iamlive
 COPY --from=terraform /bin/terraform /usr/local/bin/terraform
 COPY --from=terragrunt /usr/local/bin/terragrunt /usr/local/bin/terragrunt
@@ -55,6 +56,7 @@ COPY --from=tfdocs /usr/local/bin/terraform-docs /usr/local/bin/terraform-docs
 COPY --from=tflint /usr/local/bin/tflint /usr/local/bin/tflint
 COPY --from=tfupdate /usr/local/bin/tfupdate /usr/local/bin/tfupdate
 COPY --from=trivy /usr/local/bin/trivy /usr/local/bin/trivy
+COPY ./src/scripts/entrypoint.deploy.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x \
   /usr/local/bin/iamlive \
   /usr/local/bin/terraform \
@@ -62,10 +64,6 @@ RUN chmod +x \
   /usr/local/bin/terragrunt \
   /usr/local/bin/tflint \
   /usr/local/bin/tfupdate \
-  /usr/local/bin/trivy
-COPY ./src/scripts/entrypoint.deploy.sh /usr/local/bin/entrypoint.sh
-COPY ./src/config/terraformrc /opt/tf/.terraformrc
-WORKDIR /opt/tf
-ENV TF_CLI_CONFIG_FILE=/opt/tf/.terraformrc
-RUN chmod +x /usr/local/bin/entrypoint.sh
+  /usr/local/bin/trivy \
+  /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
