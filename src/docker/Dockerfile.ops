@@ -2,15 +2,17 @@
 # vim: set ft=dockerfile:
 
 # Must be declared at global scope.
+ARG IAMLIVE=1.1.27
 ARG TERRAFORM=1.14.0
+ARG TERRAGRUNT=0.93.11
 ARG TFDOCS=0.20.0
-ARG TFLINT=v0.60.0
+ARG TFLINT=0.60.0
 ARG TFUPDATE=0.9
 ARG TRIVY=0.67.2
 
 FROM hashicorp/terraform:${TERRAFORM} AS terraform
 FROM quay.io/terraform-docs/terraform-docs:${TFDOCS} AS tfdocs
-FROM ghcr.io/terraform-linters/tflint:${TFLINT} AS tflint
+FROM ghcr.io/terraform-linters/tflint:v${TFLINT} AS tflint
 FROM minamijoyo/tfupdate:${TFUPDATE} AS tfupdate
 FROM aquasec/trivy:${TRIVY} AS trivy
 
@@ -23,19 +25,17 @@ RUN apt-get update && \
 
 FROM base AS iamlive
 ARG TARGETARCH
-ARG IAMLIVE=v1.1.27
 RUN curl --fail --show-error -Lo \
   ./iamlive.tar.gz \
-  https://github.com/iann0036/iamlive/releases/download/$IAMLIVE/iamlive-$IAMLIVE-$(uname)-$TARGETARCH.tar.gz
+  https://github.com/iann0036/iamlive/releases/download/v$IAMLIVE/iamlive-$IAMLIVE-$(uname)-$TARGETARCH.tar.gz
 RUN tar -xzf iamlive.tar.gz
 RUN mv iamlive /usr/local/bin/iamlive
 
 FROM base AS terragrunt
 ARG TARGETARCH
-ARG TERRAGRUNT=v0.93.11
 RUN curl --fail --show-error -Lo \
   ./terragrunt \
-  https://github.com/gruntwork-io/terragrunt/releases/download/$TERRAGRUNT/terragrunt_$(uname)_$TARGETARCH
+  https://github.com/gruntwork-io/terragrunt/releases/download/v$TERRAGRUNT/terragrunt_$(uname)_$TARGETARCH
 RUN mv terragrunt /usr/local/bin/terragrunt
 
 FROM debian:trixie-slim AS final

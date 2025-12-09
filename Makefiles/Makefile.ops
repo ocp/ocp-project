@@ -9,6 +9,7 @@ IMAGE := $(IMAGE_ADDRESS).ops:$(IMAGE_VERSION)
 TF_LOG := WARN
 TF_DIR := $(ROOT)/src/tf
 TF_VOLUME := /opt/tf
+TF_BIND := $(TF_DIR):$(TF_VOLUME)
 
 ops.help:
 	@echo "  ops.integrate         run all linters and scanners"
@@ -34,7 +35,7 @@ ops.scan: \
 
 ops.shell:
 	docker run --rm -it \
-		-v "$(TF_DIR):$(TF_VOLUME)" \
+		-v "$(TF_BIND)" \
 		$(IMAGE) \
 		bash
 .PHONY: ops.shell
@@ -59,7 +60,7 @@ _ops.lint.tf.docs:
 	DIRS="modules"; \
 	for dir in $$DIRS; do \
 		docker run --rm -i \
-			-v "$(TF_DIR):$(TF_VOLUME)" \
+			-v "$(TF_BIND)" \
 			$(IMAGE) \
 			terraform-docs \
 			markdown table \
@@ -72,7 +73,7 @@ _ops.lint.tf.docs:
 
 _ops.lint.tf.fmt:
 	docker run --rm -i \
-		-v "$(TF_DIR):$(TF_VOLUME)" \
+		-v "$(TF_BIND)" \
 		$(IMAGE) \
 		terraform fmt \
 		-diff \
@@ -81,14 +82,14 @@ _ops.lint.tf.fmt:
 
 _ops.lint.tf.hcl.fmt:
 	docker run --rm -i \
-		-v "$(TF_DIR):$(TF_VOLUME)" \
+		-v "$(TF_BIND)" \
 		$(IMAGE) \
 		terragrunt hcl fmt
 .PHONY: _ops.lint.tf.hcl.fmt
 
 _ops.lint.tf.hcl.validate:
 	docker run --rm -i \
-		-v "$(TF_DIR):$(TF_VOLUME)" \
+		-v "$(TF_BIND)" \
 		$(IMAGE) \
 		terragrunt hcl validate \
 		--log-level $(TF_LOG);
