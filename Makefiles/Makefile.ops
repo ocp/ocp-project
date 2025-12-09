@@ -57,7 +57,7 @@ _ops.lint.tf.check: \
 .PHONY: _ops.lint.tf.check
 
 _ops.lint.tf.docs:
-	DIRS="modules"; \
+	DIRS="modules modules/aws"; \
 	for dir in $$DIRS; do \
 		docker run --rm -i \
 			-v "$(TF_BIND)" \
