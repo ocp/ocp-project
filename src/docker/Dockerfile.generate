@@ -1,8 +1,6 @@
 # ; -*- mode: dockerfile;-*-
 # vim: set ft=dockerfile:
 
-ARG BOILERPLATE=v0.10.1
-
 FROM debian:trixie AS base
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -12,6 +10,7 @@ RUN apt-get update && \
 
 FROM base AS boilerplate
 ARG TARGETARCH
+ARG BOILERPLATE=v0.10.1
 RUN curl --fail --show-error -Lo \
   ./boilerplate \
   https://github.com/gruntwork-io/boilerplate/releases/download/$BOILERPLATE/boilerplate_$(uname)_$TARGETARCH
