@@ -7,7 +7,7 @@ Eventually this repo will contain:
 
 - Useful [`Dockerfile` definitions](src/docker) for CI/CD toolchains, IaC provisioning, application workloads, etc.
 - [Boilerplate blueprints and templates](src/boilerplate) for provisioning new files, modules and projects.
-- CI/CD patterns for scanning, integrating and deploying containerized workloads.
+- CI/CD patterns for scanning, integrating and deploying containers.
 - Reusable and 'higher-order' [Terraform modules](src/tf/modules).
 - Utilities for implementing local developer environments.
 - Various handy [scripts](src/scripts).
@@ -18,11 +18,11 @@ toolchains.
 > **WARNING**: This material is tailored to our own working preferences and
 specifications and is in some sense 'opinionated'. It's abstracted from our
 experiences building and is **not** meant to be a general open-source library.
-So, you should expect it change at our convenience, possibly breaking
-interfaces and expectations. That said, if you find anything useful that you'd
-like to use yourself, please go ahead! We probably can't accept pull requests
-or solve any issues for you at this point in time, unless you've got something
-really compelling to say.
+You should expect it change without warning, possibly breaking interfaces and
+expectations. That said, if you find anything useful that you'd like to use
+yourself, please go ahead! We probably can't accept pull requests or solve any
+issues for you at this point in time, unless you've got something really
+compelling to say, or a particular bugfix.
 
 ---
 
