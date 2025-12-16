@@ -21,11 +21,11 @@ data "aws_iam_policy_document" "this" {
       variable = "token.actions.githubusercontent.com:sub"
       values = concat(
         [
-          for item in var.allowed_oidc :
+          for item in var.allowed :
           "repo:${item["org"]}/${item["repo"]}:pull_request"
         ],
         [
-          for item in var.allowed_oidc :
+          for item in var.allowed :
           "repo:${item["org"]}/${item["repo"]}:ref:refs/heads/${item["branch"]}"
         ],
       )

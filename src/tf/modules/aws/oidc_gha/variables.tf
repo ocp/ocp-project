@@ -1,6 +1,6 @@
 # Variables for the oidc_gha module.
 
-variable "allowed_oidc" {
+variable "allowed" {
   description = "Github org/repos/branches allowed to assume the OIDC role."
   type        = list(map(string))
 }
@@ -10,8 +10,12 @@ variable "label_context" {
   type        = any
 }
 
-variable "role_name" {
-  description = "Name of the Github Actions OIDC role."
+variable "provider_name" {
+  description = "Name suffix for the github action OIDC provider resource."
   type        = string
-  default     = "GhaOIDCRole"
+}
+
+variable "role_name" {
+  description = "Name suffix for the Github Actions OIDC role."
+  type        = string
 }

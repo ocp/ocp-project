@@ -84,7 +84,8 @@ _ops.lint.tf.hcl.fmt:
 	docker run --rm -i \
 		-v "$(TF_BIND)" \
 		$(IMAGE) \
-		terragrunt hcl fmt
+		terragrunt hcl fmt \
+		-diff
 .PHONY: _ops.lint.tf.hcl.fmt
 
 _ops.lint.tf.hcl.validate:
