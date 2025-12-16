@@ -37,9 +37,10 @@ Deploys a Github Actions OIDC provider to your environment.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_allowed_oidc"></a> [allowed\_oidc](#input\_allowed\_oidc) | Github org/repos/branches allowed to assume the OIDC role. | `list(map(string))` | n/a | yes |
+| <a name="input_allowed"></a> [allowed](#input\_allowed) | Github org/repos/branches allowed to assume the OIDC role. | `list(map(string))` | n/a | yes |
 | <a name="input_label_context"></a> [label\_context](#input\_label\_context) | The label context from the calling module. | `any` | n/a | yes |
-| <a name="input_role_name"></a> [role\_name](#input\_role\_name) | Name of the Github Actions OIDC role. | `string` | `"GhaOIDCRole"` | no |
+| <a name="input_provider_name"></a> [provider\_name](#input\_provider\_name) | Name suffix for the github action OIDC provider resource. | `string` | n/a | yes |
+| <a name="input_role_name"></a> [role\_name](#input\_role\_name) | Name suffix for the Github Actions OIDC role. | `string` | n/a | yes |
 
 ## Outputs
 
@@ -49,5 +50,4 @@ Deploys a Github Actions OIDC provider to your environment.
 | <a name="output_provider_arn"></a> [provider\_arn](#output\_provider\_arn) | The ARN of the OIDC provider resource. |
 | <a name="output_role_arn"></a> [role\_arn](#output\_role\_arn) | The ARN of the role carrying OIDC. |
 | <a name="output_role_name"></a> [role\_name](#output\_role\_name) | The name of the role carrying OIDC. |
-| <a name="output_simple_role_name"></a> [simple\_role\_name](#output\_simple\_role\_name) | The basic role name that terminates the ARN. |
 <!-- END_TF_DOCS -->

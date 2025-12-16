@@ -19,8 +19,3 @@ output "role_name" {
   description = "The name of the role carrying OIDC."
   value       = aws_iam_role.this.name
 }
-
-output "simple_role_name" {
-  description = "The basic role name that terminates the ARN."
-  value       = var.role_name
-}
