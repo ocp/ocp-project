@@ -6,7 +6,7 @@ output "provider_arn" {
 }
 
 output "policy_document" {
-  description = "The oidc policy document json."
+  description = "The OIDC policy document as JSON."
   value       = data.aws_iam_policy_document.this.json
 }
 

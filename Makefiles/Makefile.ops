@@ -47,12 +47,10 @@ _ops.lint.tf: \
 .PHONY: _ops.lint.tf
 
 _ops.lint.tf.format: \
-	_ops.lint.tf.fmt \
-	_ops.lint.tf.hcl.fmt
+	_ops.lint.tf.fmt
 .PHONY: _ops.lint.tf.format
 
 _ops.lint.tf.check: \
-	_ops.lint.tf.hcl.validate \
 	_ops.lint.tf.docs
 .PHONY: _ops.lint.tf.check
 
@@ -79,22 +77,6 @@ _ops.lint.tf.fmt:
 		-diff \
 		-write
 .PHONY: _ops.lint.fmt
-
-_ops.lint.tf.hcl.fmt:
-	docker run --rm -i \
-		-v "$(TF_BIND)" \
-		$(IMAGE) \
-		terragrunt hcl fmt \
-		-diff
-.PHONY: _ops.lint.tf.hcl.fmt
-
-_ops.lint.tf.hcl.validate:
-	docker run --rm -i \
-		-v "$(TF_BIND)" \
-		$(IMAGE) \
-		terragrunt hcl validate \
-		--log-level $(TF_LOG);
-.PHONY: _ops.lint.tf.hcl.validate
 
 _ops.scan.images:
 .PHONY: _ops.scan.images

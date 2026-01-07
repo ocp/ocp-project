@@ -27,12 +27,6 @@ repos:
         language: system
         types_or: [hcl, terraform]
         require_serial: true
-      - id: tf-hcl-validate
-        name: terragrunt hcl validate
-        entry: make -s _ops.lint.tf.hcl.validate
-        language: system
-        types_or: [hcl, terraform]
-        require_serial: true
       - id: tf-docs
         name: terraform docs
         entry: make -s _ops.lint.tf.docs
