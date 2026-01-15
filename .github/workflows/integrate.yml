@@ -29,8 +29,8 @@ env:
   GHCR_OWNER: ${{ github.repository_owner }}
 
 jobs:
-  change_detection:
-    name: 'Detect changes'
+  metadata:
+    name: 'Metadata'
     runs-on: ubuntu-latest
     outputs:
       green: ${{ steps.last-successful-commit.outputs.base }}
@@ -77,8 +77,8 @@ jobs:
   integrate_generate_image:
     name: 'Integrate ocp.project.generate'
     runs-on: ubuntu-latest
-    needs: change_detection
-    if: needs.change_detection.outputs.images == 'true'
+    needs: metadata
+    if: needs.metadata.outputs.images == 'true'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -88,7 +88,7 @@ jobs:
       - id: changed-image
         uses: tj-actions/changed-files@v47
         with:
-          base_sha: ${{ needs.change_detection.outputs.green }}
+          base_sha: ${{ needs.metadata.outputs.green }}
           files: ./src/docker/Dockerfile.generate
 
       - uses: docker/login-action@v3
@@ -141,12 +141,12 @@ jobs:
             type=gha,scope=generate.final,mode=max
           target: final
           tags: |
-            ${{ needs.change_detection.outputs.image-prefix }}.generate:${{ github.sha }}
+            ${{ needs.metadata.outputs.image-prefix }}.generate:${{ github.sha }}
 
       - uses: aquasecurity/trivy-action@0.28.0
         if: steps.changed-image.outputs.any_changed == 'true'
         with:
-          image-ref: ${{ needs.change_detection.outputs.image-prefix }}.generate:${{ github.sha }}
+          image-ref: ${{ needs.metadata.outputs.image-prefix }}.generate:${{ github.sha }}
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
@@ -157,8 +157,8 @@ jobs:
   integrate_ops_image:
     name: 'Integrate ocp.project.ops'
     runs-on: ubuntu-latest
-    needs: change_detection
-    if: needs.change_detection.outputs.images == 'true'
+    needs: metadata
+    if: needs.metadata.outputs.images == 'true'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -168,7 +168,7 @@ jobs:
       - id: changed-image
         uses: tj-actions/changed-files@v47
         with:
-          base_sha: ${{ needs.change_detection.outputs.green }}
+          base_sha: ${{ needs.metadata.outputs.green }}
           files: ./src/docker/Dockerfile.ops
 
       - uses: docker/login-action@v3
@@ -236,12 +236,12 @@ jobs:
             type=gha,scope=ops.final,mode=max
           target: final
           tags: |
-            ${{ needs.change_detection.outputs.image-prefix }}.ops:${{ github.sha }}
+            ${{ needs.metadata.outputs.image-prefix }}.ops:${{ github.sha }}
 
       - uses: aquasecurity/trivy-action@0.28.0
         if: steps.changed-image.outputs.any_changed == 'true'
         with:
-          image-ref: ${{ needs.change_detection.outputs.image-prefix }}.ops:${{ github.sha }}
+          image-ref: ${{ needs.metadata.outputs.image-prefix }}.ops:${{ github.sha }}
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
@@ -252,7 +252,7 @@ jobs:
   integrate_scripts:
     name: 'Integrate scripts'
     runs-on: ubuntu-latest
-    if: needs.change_detection.outputs.scripts == 'true'
+    if: needs.metadata.outputs.scripts == 'true'
     steps:
       - uses: actions/checkout@v4
 
@@ -264,7 +264,7 @@ jobs:
   integrate_tf_modules:
     name: 'Integrate terraform modules'
     runs-on: ubuntu-latest
-    if: needs.change_detection.outputs.tf-modules == 'true'
+    if: needs.metadata.outputs.tf-modules == 'true'
     steps:
       - uses: actions/checkout@v4
 
