@@ -3,20 +3,21 @@
 
 IAMLIVE := false
 IMAGE_ADDRESS := ghcr.io/$(NAMESPACE)/$(KEY)
-IMAGE_VERSION := 0.0.1-rc.8
+IMAGE_VERSION := 0.0.1-rc.9
 IMAGE := $(IMAGE_ADDRESS).ops:$(IMAGE_VERSION)
 
-SRC_DIR := $(ROOT)/src
-SRC_VOLUME := /opt/src
-SRC_BIND := $(SRC_DIR):$(SRC_VOLUME)
+SCAN_DIR := $(ROOT)
+SCAN_VOLUME := /opt/scan
+SCAN_BIND := $(SCAN_DIR):$(SCAN_VOLUME)
 
 TF_LOG := WARN
 TF_DIR := $(ROOT)/src/tf
 TF_VOLUME := /opt/tf
 TF_BIND := $(TF_DIR):$(TF_VOLUME)
 
-TRIVY_CACHE_DIR := $(HOME)/.trivy-cache
-TRIVY_CACHE_VOLUME := /tmp/trivy-cache
+TRIVY_CACHE := .trivy-cache
+TRIVY_CACHE_DIR := $(HOME)/$(TRIVY_CACHE)
+TRIVY_CACHE_VOLUME := /tmp/$(TRIVY_CACHE)
 TRIVY_CACHE_BIND := $(TRIVY_CACHE_DIR):$(TRIVY_CACHE_VOLUME)
 
 ops.help:
@@ -37,7 +38,7 @@ ops.lint: \
 .PHONY: ops.lint
 
 ops.scan: \
-	_ops.code.scan
+	_ops.code.scan.fs
 .PHONY: ops.scan
 
 ops.shell:
@@ -85,13 +86,17 @@ _ops.tf.lint.fmt:
 		-write
 .PHONY: _ops.lint.fmt
 
-_ops.code.scan:
+_ops.code.scan.fs:
 	docker run --rm -i \
-		-v "$(SRC_BIND)" \
+		-v "$(SCAN_BIND)" \
 		-v "$(TRIVY_CACHE_BIND)" \
 		$(IMAGE) \
 		trivy fs \
 		--cache-dir $(TRIVY_CACHE_VOLUME) \
 		--scanners vuln,misconfig,secret \
-		$(SRC_VOLUME)
+		--severity CRITICAL \
+		--exit-code 1 \
+		--severity LOW,MEDIUM,HIGH \
+		--exit-code 0 \
+		$(SCAN_VOLUME)
 .PHONY: _ops.code.scan
