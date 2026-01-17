@@ -25,12 +25,11 @@ ops.integrate: \
 .PHONY: ops.integrate
 
 ops.lint: \
-	 _ops.lint.tf
+	 _ops.tf.lint
 .PHONY: ops.lint
 
 ops.scan: \
-	_ops.scan.images \
-	_ops.scan.tf
+	_ops.images.scan
 .PHONY: ops.lint
 
 ops.shell:
@@ -41,20 +40,20 @@ ops.shell:
 .PHONY: ops.shell
 
 ### Private (non-interface) targets.
-_ops.lint.tf: \
-	_ops.lint.tf.format \
-	_ops.lint.tf.check
-.PHONY: _ops.lint.tf
+_ops.tf.lint: \
+	_ops.tf.lint.format \
+	_ops.tf.lint.check
+.PHONY: _ops.tf.lint
 
-_ops.lint.tf.format: \
-	_ops.lint.tf.fmt
-.PHONY: _ops.lint.tf.format
+_ops.tf.lint.format: \
+	_ops.tf.lint.fmt
+.PHONY: _ops.tf.lint.format
 
-_ops.lint.tf.check: \
-	_ops.lint.tf.docs
-.PHONY: _ops.lint.tf.check
+_ops.tf.lint.check: \
+	_ops.tf.lint.docs
+.PHONY: _ops.tf.lint.check
 
-_ops.lint.tf.docs:
+_ops.tf.lint.docs:
 	DIRS="modules modules/aws"; \
 	for dir in $$DIRS; do \
 		docker run --rm -i \
@@ -67,9 +66,9 @@ _ops.lint.tf.docs:
 			--output-file README.md \
 			$(TF_VOLUME); \
 	done
-.PHONY: _ops.lint.tf.docs
+.PHONY: _ops.tf.lint.docs
 
-_ops.lint.tf.fmt:
+_ops.tf.lint.fmt:
 	docker run --rm -i \
 		-v "$(TF_BIND)" \
 		$(IMAGE) \
@@ -78,8 +77,5 @@ _ops.lint.tf.fmt:
 		-write
 .PHONY: _ops.lint.fmt
 
-_ops.scan.images:
-.PHONY: _ops.scan.images
-
-_ops.scan.tf:
-.PHONY: _ops.scan.tf
+_ops.images.scan:
+.PHONY: _ops.images.scan

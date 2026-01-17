@@ -1,6 +1,5 @@
 # ; -*- mode: dockerfile;-*-
 # vim: set ft=dockerfile:
-
 FROM debian:trixie AS base
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \

@@ -16,6 +16,7 @@ repos:
     rev: v0.11.0
     hooks:
       - id: shellcheck
+        name: shellcheck
         types: [shell]
 
   # Terraform
@@ -23,30 +24,23 @@ repos:
     hooks:
       - id: tf-format
         name: terraform format
-        entry: make -s _ops.lint.tf.format
+        entry: make -s _ops.tf.lint.format
         language: system
         types_or: [hcl, terraform]
         require_serial: true
       - id: tf-docs
         name: terraform docs
-        entry: make -s _ops.lint.tf.docs
+        entry: make -s _ops.tf.lint.docs
         language: system
         types_or: [hcl, terraform]
         require_serial: true
 
-  # Code scanning
+  # Image scanning
   - repo: local
     hooks:
-      - id: scan images
-        name: No-op hook
-        entry: echo "noop"
+      - id: images-scan
+        name: images scan
+        entry: make -s _ops.images.scan
         language: system
-        always_run: true
-        pass_filenames: false
-
-      - id: scan tf
-        name: No-op hook
-        entry: echo "noop"
-        language: system
-        always_run: true
-        pass_filenames: false
+        types: [dockerfile]
+        require_serial: true
