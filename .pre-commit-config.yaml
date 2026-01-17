@@ -35,12 +35,13 @@ repos:
         types_or: [hcl, terraform]
         require_serial: true
 
-  # Image scanning
+  # Vulnerability scanning
   - repo: local
     hooks:
-      - id: images-scan
-        name: images scan
-        entry: make -s _ops.images.scan
+      - id: code-scan
+        name: code scan
+        entry: make -s ops.scan
         language: system
-        types: [dockerfile]
+        always_run: true
         require_serial: true
+        verbose: true

@@ -3,13 +3,21 @@
 
 IAMLIVE := false
 IMAGE_ADDRESS := ghcr.io/$(NAMESPACE)/$(KEY)
-IMAGE_VERSION := 0.0.1-rc.6
+IMAGE_VERSION := 0.0.1-rc.8
 IMAGE := $(IMAGE_ADDRESS).ops:$(IMAGE_VERSION)
+
+SRC_DIR := $(ROOT)/src
+SRC_VOLUME := /opt/src
+SRC_BIND := $(SRC_DIR):$(SRC_VOLUME)
 
 TF_LOG := WARN
 TF_DIR := $(ROOT)/src/tf
 TF_VOLUME := /opt/tf
 TF_BIND := $(TF_DIR):$(TF_VOLUME)
+
+TRIVY_CACHE_DIR := $(HOME)/.trivy-cache
+TRIVY_CACHE_VOLUME := /tmp/trivy-cache
+TRIVY_CACHE_BIND := $(TRIVY_CACHE_DIR):$(TRIVY_CACHE_VOLUME)
 
 ops.help:
 	@echo "  ops.integrate         run all linters and scanners"
@@ -29,8 +37,8 @@ ops.lint: \
 .PHONY: ops.lint
 
 ops.scan: \
-	_ops.images.scan
-.PHONY: ops.lint
+	_ops.code.scan
+.PHONY: ops.scan
 
 ops.shell:
 	docker run --rm -it \
@@ -77,5 +85,13 @@ _ops.tf.lint.fmt:
 		-write
 .PHONY: _ops.lint.fmt
 
-_ops.images.scan:
-.PHONY: _ops.images.scan
+_ops.code.scan:
+	docker run --rm -i \
+		-v "$(SRC_BIND)" \
+		-v "$(TRIVY_CACHE_BIND)" \
+		$(IMAGE) \
+		trivy fs \
+		--cache-dir $(TRIVY_CACHE_VOLUME) \
+		--scanners vuln,misconfig,secret \
+		$(SRC_VOLUME)
+.PHONY: _ops.code.scan

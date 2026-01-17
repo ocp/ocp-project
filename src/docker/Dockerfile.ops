@@ -6,7 +6,7 @@ ARG TERRAFORM=1.14.0
 ARG TFDOCS=0.20.0
 ARG TFLINT=0.60.0
 ARG TFUPDATE=0.9.3
-ARG TRIVY=0.67.2
+ARG TRIVY=0.68.2
 
 FROM hashicorp/terraform:${TERRAFORM} AS terraform
 FROM quay.io/terraform-docs/terraform-docs:${TFDOCS} AS tfdocs
@@ -49,7 +49,6 @@ RUN apt-get update && \
         procps && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-WORKDIR /opt/tf
 COPY --from=iamlive /usr/local/bin/iamlive /usr/local/bin/iamlive
 COPY --from=terraform /bin/terraform /usr/local/bin/terraform
 COPY --from=terragrunt /usr/local/bin/terragrunt /usr/local/bin/terragrunt
@@ -67,4 +66,5 @@ RUN chmod +x \
   /usr/local/bin/tfupdate \
   /usr/local/bin/trivy \
   /usr/local/bin/entrypoint.sh
+WORKDIR /opt/tf
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
