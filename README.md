@@ -30,5 +30,5 @@ compelling to say, or a particular bugfix.
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge" alt="License">
 </a>
 
-This code is licensed under the Apache License 2.0.
+This code is licensed under the Apache License 2.0.</br>
 See the [LICENSE](LICENSE) file for details.
